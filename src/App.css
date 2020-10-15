@@ -1,5 +1,17 @@
 .App {
   text-align: center;
+  padding: 20px;
+  background-color: #61dafb;
+}
+
+.btn {
+  border: 1px solid #ffffff;
+  margin: 1px;
+}
+
+.body {
+  width: 300px;
+  background-color: #eaeaea;
 }
 
 .App-logo {
