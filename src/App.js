@@ -21,6 +21,7 @@ import React from 'react'
 import QRGenarate from './Components/QRGenerate.Component'
 import Appbar from './Components/AppBar.Component'
 import io from './services/socket.service.js'
+import constant from './utils/constant'
 // import User from './database'
 import './App.css'
 
@@ -33,11 +34,40 @@ const useStyles = makeStyles((theme) => ({
 function App() {
   const [value, setValue] = React.useState('')
   const [data, setData] = React.useState([])
+
+  var perubahan = async (def) => {
+    var absen = await Axios.get(constant.apiUrl + '/absen/')
+    var berubah = absen.data
+    if (berubah !== null || berubah !== undefined) {
+      berubah.map((val, i) => {
+        def.map((dc, inc) => {
+          var now = Date.parse(new Date().toLocaleString())
+          if (constant.getTanggal(val.waktu) === constant.getTanggal(now)) {
+            if (val.nisn === dc.nisn) {
+              var value = {
+                nisn: dc.nisn,
+                nama: dc.nama,
+                absen: val.absen,
+                jam: constant.getTime(val.waktu),
+                kelas_absen: val.kelas,
+              }
+              def[inc] = value
+            }
+          }
+        })
+      })
+    }
+    setData(def)
+  }
+
+  io.on('berubah', () => {
+    perubahan(data)
+  })
+
   React.useEffect(() => {
     var getData = async () => {
-      var res = await Axios.get('http://localhost:4000/user/all')
-      io.on('berubah', () => {})
-      setData(res.data)
+      var res = await Axios.get(constant.apiUrl + '/user/all')
+      perubahan(res.data)
     }
     getData()
   }, [])
@@ -55,6 +85,7 @@ function App() {
                   <TableCell>NISN</TableCell>
                   <TableCell>Nama</TableCell>
                   <TableCell>Absen</TableCell>
+                  <TableCell>Kelas</TableCell>
                   <TableCell>Jam</TableCell>
                 </TableRow>
               </TableHead>
@@ -67,7 +98,7 @@ function App() {
                     <TableCell>{item.nisn}</TableCell>
                     <TableCell>{item.nama}</TableCell>
                     <TableCell>
-                      {absen === true ? (
+                      {item.absen === true ? (
                         <Alert icon={<Check fontSize="inherit" />} severity="success">
                           Sudah
                         </Alert>
@@ -77,7 +108,8 @@ function App() {
                         </Alert>
                       )}
                     </TableCell>
-                    <TableCell>00.00</TableCell>
+                    <TableCell>{item.kelas_absen !== undefined ? item.kelas_absen : ''}</TableCell>
+                    <TableCell>{item.jam !== undefined ? item.jam : '00.00'}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -92,7 +124,7 @@ function App() {
                 id="filled-basic"
                 label="Value QRCode"
                 style={{width: 275}}
-                onChange={(txt) => setValue(txt.target.value)}
+                onChange={(txt) => setValue(btoa(txt.target.value))}
                 variant="outlined"
               />
               <br />

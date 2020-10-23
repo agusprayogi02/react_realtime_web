@@ -26,9 +26,6 @@ const CustomAppBar = () => {
           <Typography variant="h6" className={classes.title}>
             Daftar Absensi
           </Typography>
-          <Button variant="outlined" color="inherit">
-            Login
-          </Button>
         </Toolbar>
       </AppBar>
     </div>
