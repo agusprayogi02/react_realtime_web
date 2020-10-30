@@ -1,5 +1,6 @@
 import IO from 'socket.io-client'
-var socket = IO.connect('ws://localhost:4000', {
-    reconnectionDelayMax: 10000,
+import cont from '../utils/constant'
+var socket = IO.connect(cont.apiUrl, {
+  reconnectionDelayMax: 10000,
 })
 export default socket
