@@ -1,140 +1,63 @@
-// import classes from '*.module.sass'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  Grid,
-  makeStyles,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TextField,
-  Paper,
-} from '@material-ui/core'
-import {Alert} from '@material-ui/lab'
-import {Check, Clear} from '@material-ui/icons'
-import Axios from 'axios'
 import React from 'react'
-import QRGenarate from './Components/QRGenerate.Component'
-import Appbar from './Components/AppBar.Component'
-import io from './services/socket.service.js'
-import constant from './utils/constant'
-// import User from './database'
+import {AppBar, Toolbar, IconButton, Typography, Button, makeStyles} from '@material-ui/core'
+import {Menu} from '@material-ui/icons'
+import {BrowserRouter as Router, Route, Switch} from 'react-router-dom'
+import Home from './views/Home'
 import './App.css'
+import Login from './views/Login'
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    width: '100%',
+    flexGrow: 1,
+  },
+  menuButton: {
+    marginRight: theme.spacing(2),
+  },
+  title: {
+    flexGrow: 1,
   },
 }))
 
-function App() {
-  const [value, setValue] = React.useState('')
-  const [data, setData] = React.useState([])
-
-  var perubahan = async (def) => {
-    var absen = await Axios.get(constant.apiUrl + '/absen/')
-    var berubah = absen.data
-    if (berubah !== null || berubah !== undefined) {
-      berubah.map((val, i) => {
-        def.map((dc, inc) => {
-          var now = Date.parse(new Date().toLocaleString())
-          if (constant.getTanggal(val.waktu) === constant.getTanggal(now)) {
-            if (val.nisn === dc.nisn) {
-              var value = {
-                nisn: dc.nisn,
-                nama: dc.nama,
-                absen: val.absen,
-                jam: constant.getTime(val.waktu),
-                kelas_absen: val.kelas,
-              }
-              def[inc] = value
-            }
-          }
-        })
-      })
-    }
-    setData(def)
-  }
-
-  io.on('berubah', () => {
-    perubahan(data)
-  })
-
-  React.useEffect(() => {
-    var getData = async () => {
-      var res = await Axios.get(constant.apiUrl + '/user/all')
-      perubahan(res.data)
-    }
-    getData()
-  }, [])
+const App = () => {
   const classes = useStyles()
   return (
     <div className="App">
-      <Appbar />
-      <Grid container direction="row" justify="center" spacing={3} style={{padding: 20}}>
-        <Grid container item xs={8}>
-          <TableContainer component={Paper} variant="outlined">
-            <Table className={classes.root} aria-label="caption table">
-              <TableHead style={{backgroundColor: 'lightskyblue'}}>
-                <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell>NISN</TableCell>
-                  <TableCell>Nama</TableCell>
-                  <TableCell>Absen</TableCell>
-                  <TableCell>Kelas</TableCell>
-                  <TableCell>Jam</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {data.map((item, i) => (
-                  <TableRow key={i}>
-                    <TableCell component="th" scope="row">
-                      {++i}
-                    </TableCell>
-                    <TableCell>{item.nisn}</TableCell>
-                    <TableCell>{item.nama}</TableCell>
-                    <TableCell>
-                      {item.absen === true ? (
-                        <Alert icon={<Check fontSize="inherit" />} severity="success">
-                          Sudah
-                        </Alert>
-                      ) : (
-                        <Alert icon={<Clear fontSize="inherit" />} severity="error">
-                          Belum
-                        </Alert>
-                      )}
-                    </TableCell>
-                    <TableCell>{item.kelas_absen !== undefined ? item.kelas_absen : ''}</TableCell>
-                    <TableCell>{item.jam !== undefined ? item.jam : '00.00'}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Grid>
-        <Grid container item xs={3}>
-          <Card variant="outlined" className={classes.root}>
-            <CardHeader style={{backgroundColor: 'lightskyblue'}} title="Pembuatan QRCode" />
-            <CardContent>
-              <TextField
-                id="filled-basic"
-                label="Value QRCode"
-                style={{width: 275}}
-                onChange={(txt) => setValue(btoa(txt.target.value))}
-                variant="outlined"
-              />
-              <br />
-              <br />
-              <QRGenarate value={value} />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+      <div className={classes.root}>
+        <AppBar position="sticky">
+          <Toolbar>
+            <IconButton
+              edge="start"
+              className={classes.menuButton}
+              color="inherit"
+              aria-label="menu">
+              <Menu />
+            </IconButton>
+            <Typography variant="h6" className={classes.title}>
+              Daftar Absensi
+            </Typography>
+
+            <Button variant="outlined" className={classes.menuButton} color="inherit" href="/">
+              Home
+            </Button>
+            <Button variant="outlined" color="inherit" href="/login">
+              Login
+            </Button>
+          </Toolbar>
+        </AppBar>
+      </div>
+
+      <Router>
+        <Switch>
+          <Route exact path="/">
+            <Home />
+          </Route>
+          <Route path="/login">
+            <Login />
+          </Route>
+        </Switch>
+      </Router>
     </div>
   )
 }
+
 export default App

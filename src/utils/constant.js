@@ -3,7 +3,7 @@ var onn = 'https://school-realtime.herokuapp.com'
 var off = 'http://localhost:4000'
 
 var data = {
-  apiUrl: onn,
+  apiUrl: off,
   getTanggal: (milliS) => {
     return date.format(new Date(milliS), 'DD-MM-YYYY')
   },
