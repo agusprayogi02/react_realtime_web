@@ -11,8 +11,10 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TextField,
+  Menu,
+  MenuItem,
   Paper,
+  Button,
 } from '@material-ui/core'
 import { Alert } from '@material-ui/lab'
 import { Check, Clear } from '@material-ui/icons'
@@ -30,8 +32,65 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
+
+function SideLeft() {
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [ruangan, setRuangan] = React.useState([]);
+  const [value, setValue] = React.useState("")
+  const [absen, setAbsen] = React.useState("")
+
+  React.useEffect(() => {
+    var getruang = async () => {
+      var res = await Axios.get(constant.apiUrl + '/ruangan')
+      if (res.status === 200) {
+        setRuangan(res.data)
+      }
+    }
+    getruang()
+  }, [])
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  io.on("hasilAbsen", (hasil) => {
+    setAbsen(hasil)
+  })
+
+  const handleClose = (val) => {
+    io.emit("getBarcode", val)
+    io.on("getBarcode", (fn) => {
+      if (fn != null) {
+        setValue(fn)
+      }
+    })
+    setAnchorEl(null);
+  };
+  const classes = useStyles()
+  return (<Card variant="outlined" className={classes.root}>
+    <CardHeader style={{ backgroundColor: 'lightskyblue' }} title="Pembuatan QRCode" />
+    <CardContent>
+      <Button aria-controls="simple-menu" variant="outlined" aria-haspopup="true" onClick={handleClick}>
+        {absen === "" ? "Pilih Ruang" : absen}</Button>
+      <br />
+      <Menu
+        id="simple-menu"
+        anchorEl={anchorEl}
+        keepMounted
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+      >
+        {ruangan.map((val, i) =>
+          <MenuItem style={{ width: 200 }} key={i} onClick={() => handleClose(val.ruangan)}>{val.ruangan}</MenuItem>
+        )}
+      </Menu>
+      <br />
+      <QRGenarate value={value} />
+    </CardContent>
+  </Card>)
+}
+
 function Home() {
-  const [value, setValue] = React.useState('')
   const [data, setData] = React.useState([])
 
   var perubahan = async (def) => {
@@ -63,6 +122,13 @@ function Home() {
 
   io.on('berubah', () => {
     perubahan(data)
+  })
+
+  io.on("cekAbsen", (hasil) => {
+    console.log(hasil);
+  })
+  io.on("hasilAbsen", (hasil) => {
+    console.log(hasil);
   })
 
   React.useEffect(() => {
@@ -100,7 +166,7 @@ function Home() {
                     <TableCell>{item.nisn}</TableCell>
                     <TableCell>{item.nama}</TableCell>
                     <TableCell>
-                      {item.absen === true ? (
+                      {item.absen ? (
                         <Alert icon={<Check fontSize="inherit" />} severity="success">
                           Sudah
                         </Alert>
@@ -119,21 +185,7 @@ function Home() {
           </TableContainer>
         </Grid>
         <Grid container item xs={3}>
-          <Card variant="outlined" className={classes.root}>
-            <CardHeader style={{ backgroundColor: 'lightskyblue' }} title="Pembuatan QRCode" />
-            <CardContent>
-              <TextField
-                id="filled-basic"
-                label="Value QRCode"
-                style={{ width: 275 }}
-                onChange={(txt) => setValue(btoa(txt.target.value))}
-                variant="outlined"
-              />
-              <br />
-              <br />
-              <QRGenarate value={value} />
-            </CardContent>
-          </Card>
+          <SideLeft />
         </Grid>
       </Grid>
     </div>
