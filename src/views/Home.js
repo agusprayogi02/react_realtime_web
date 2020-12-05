@@ -57,6 +57,10 @@ function SideLeft() {
     setAbsen(hasil)
   })
 
+  const coba = () => {
+    io.emit('cekAbsen', "0026511951")
+  }
+
   const handleClose = (val) => {
     io.emit("getBarcode", val)
     io.on("getBarcode", (fn) => {
@@ -72,6 +76,7 @@ function SideLeft() {
     <CardContent>
       <Button aria-controls="simple-menu" variant="outlined" aria-haspopup="true" onClick={handleClick}>
         {absen === "" ? "Pilih Ruang" : absen}</Button>
+      <Button onClick={coba}>Cek</Button>
       <br />
       <Menu
         id="simple-menu"
