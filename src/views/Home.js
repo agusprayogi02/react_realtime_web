@@ -32,12 +32,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-
 function SideLeft() {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [ruangan, setRuangan] = React.useState([]);
   const [value, setValue] = React.useState("")
-  const [absen, setAbsen] = React.useState("")
+  const [title, setTitle] = React.useState("")
 
   React.useEffect(() => {
     var getruang = async () => {
@@ -53,15 +52,12 @@ function SideLeft() {
     setAnchorEl(event.currentTarget);
   };
 
-  io.on("hasilAbsen", (hasil) => {
-    setAbsen(hasil)
-  })
-
   const coba = () => {
     io.emit('cekAbsen', "0026511951")
   }
 
   const handleClose = (val) => {
+    setTitle(val);
     io.emit("getBarcode", val)
     io.on("getBarcode", (fn) => {
       if (fn != null) {
@@ -75,8 +71,8 @@ function SideLeft() {
     <CardHeader style={{ backgroundColor: 'lightskyblue' }} title="Pembuatan QRCode" />
     <CardContent>
       <Button aria-controls="simple-menu" variant="outlined" aria-haspopup="true" onClick={handleClick}>
-        {absen === "" ? "Pilih Ruang" : absen}</Button>
-      <Button onClick={coba}>Cek</Button>
+        Pilih Ruang</Button>
+      <Button onClick={coba}>{title ?? "Cek"}</Button>
       <br />
       <Menu
         id="simple-menu"
@@ -125,7 +121,8 @@ function Home() {
     setData(def)
   }
 
-  io.on('berubah', () => {
+  io.on('berubah', (res) => {
+    io.emit('cekAbsen', res)
     perubahan(data)
   })
 
