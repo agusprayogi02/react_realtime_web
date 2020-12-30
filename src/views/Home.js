@@ -44,6 +44,15 @@ function SideLeft() {
       if (res.status === 200) {
         setRuangan(res.data)
       }
+      io.on("getBarcode", (fn) => {
+        console.log(fn);
+        if (fn != null) {
+          setValue(fn)
+        }
+      })
+      io.on('berubah', (res) => {
+        io.emit("getBarcode", title)
+      })
     }
     getruang()
   }, [])
@@ -53,17 +62,18 @@ function SideLeft() {
   };
 
   const coba = () => {
-    io.emit('cekAbsen', "0026511951")
+    io.emit('absen', {
+      lokasi: "isi",
+      absen: "Izin",
+      nisn: "0026511951",
+      ket: "Tidak Apa",
+      kelas: "b82192813a97008dc58719cfa373c2f4e796bb5936bf34b4ace6457f7c07ea37edee2bb33412c588b72d961403ac2e71f06da9448161304894964eb9ec3eb7022ed4875422b1f58f239a2f6e5ea316e813f37c7f32b758064a16dcda5b06e6e021f4f1830f-38675"
+    })
   }
 
   const handleClose = (val) => {
     setTitle(val);
     io.emit("getBarcode", val)
-    io.on("getBarcode", (fn) => {
-      if (fn != null) {
-        setValue(fn)
-      }
-    })
     setAnchorEl(null);
   };
   const classes = useStyles()
@@ -121,24 +131,23 @@ function Home() {
     setData(def)
   }
 
-  io.on('berubah', (res) => {
-    io.emit('cekAbsen', res)
-    perubahan(data)
-  })
-
-  io.on("cekAbsen", (hasil) => {
-    console.log(hasil);
-  })
-  io.on("hasilAbsen", (hasil) => {
-    console.log(hasil);
-  })
-
   React.useEffect(() => {
     var getData = async () => {
       var res = await Axios.get(constant.apiUrl + '/user/all')
       if (res.status === 200) {
         perubahan(res.data)
       }
+      io.on('berubah', (res) => {
+        io.emit('cekAbsen', res)
+        perubahan(data)
+      })
+
+      io.on("cekAbsen", (hasil) => {
+        console.log(hasil);
+      })
+      io.on("hasilAbsen", (hasil) => {
+        console.log(hasil);
+      })
     }
     getData()
   }, [])
